@@ -106,7 +106,7 @@ begin
         end if;
     end process;
 
-    process(state, i_rdata, mem_we, mem_re, i_address_valid, i_addr, i_width, i_re, i_we, mem_wdata)
+    process(state, i_rdata, mem_we, mem_re, i_address_valid, i_addr, i_width, i_re, i_we, mem_wdata, blockram_rdata)
     begin
         n_state <= state;
         n_rdata <= i_rdata;
@@ -121,9 +121,11 @@ begin
         set_b2 <= '0';
         set_b3 <= '0';
 
+        blockram_addr <= i_addr;
         blockram_wdata <= (others => '0');
         blockram_we <= '0';
         blockram_re <= '0';
+        n_rdata <= i_rdata;
 
         case state is
             when IDLE =>
@@ -136,7 +138,6 @@ begin
                     n_state <= READ_OR_WRITE_B0;
                 end if;
             when READ_OR_WRITE_B0 =>
-                blockram_addr <= i_addr;
                 if i_we = '1' then
                     blockram_we <= '1';
                     blockram_wdata <= mem_wdata(7 downto 0);

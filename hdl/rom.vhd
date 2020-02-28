@@ -31,11 +31,14 @@ architecture Behavioral of rom is
         variable ROM : memory_t;
         variable good: boolean;   -- Status of the read operations
         variable i : integer;
+
+        attribute syn_looplimit : integer;
+        attribute syn_looplimit of readFileLoop : label is to_integer(unsigned(rom_size))/4;
     begin
         --i := to_integer(unsigned(base_address)/4);
         
         i := 0;
-        while not endfile(RomFile) loop
+        readFileLoop: while not endfile(RomFile) loop
             readline (RomFile, RomFileLine);
             hread (RomFileLine, tempIn);
             ROM(i) := tempIn;
