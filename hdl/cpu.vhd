@@ -73,9 +73,10 @@ architecture behavioural of cpu is
     
 
     type state_t is (FETCH_INSTRUCTION, WAIT_UNTIL_RD_UNLOCKED, FETCH_RS1, FETCH_RS2, EXECUTE, WRITEBACK, INCREMENT_PC, PANIC);
+    attribute syn_encoding : string; attribute syn_encoding of state_t : type is "one-hot";
     signal state, n_state : state_t;
 
-    signal set_rs1, set_rs2, set_instruction, reset_instruction : std_logic;
+    signal set_instruction : std_logic;
 
     signal decode_error : std_logic_vector(127 downto 0) := (others => '1');
     signal use_rs1 : std_logic_vector(127 downto 0) := (others => '0');
@@ -196,6 +197,7 @@ begin
     registerfile_rs2 <= rs2;
     registerfile_rd <= rd;
     registerfile_wdata_rd <= result(to_integer(unsigned(opcode)));
+    inst_width <= "10";
 
     fsm: process(state, instruction_details_array, pc, inst_rdy, opcode, decode_error, use_rd, execution_done, next_pc, result,daddr, dwe)
     begin
@@ -203,11 +205,7 @@ begin
         n_pc <= pc;
         registerfile_we <= '0';
         set_instruction <= '0';
-        inst_width <= "10";
         inst_re <= '0';
-        set_rs1 <= '0';
-        set_rs2 <= '0';
-        reset_instruction <= '0';
         err <= '0';
         selected <= (others => '0');
 
@@ -220,7 +218,6 @@ begin
 
         case state is
             when FETCH_INSTRUCTION =>
-                inst_width <= "10";
                 set_instruction <= '1';
                 if inst_rdy = '1' then
                     inst_re <= '1';
@@ -238,30 +235,16 @@ begin
                 selected(to_integer(unsigned(opcode))) <= '1';
 
                 if execution_done(to_integer(unsigned(opcode))) = '1' then
+                    --set_instruction <= '1';
+                    n_pc <= next_pc(to_integer(unsigned(opcode)));
+                    n_state <= FETCH_INSTRUCTION;
                     if use_rd(to_integer(unsigned(opcode))) = '1' then
-                        n_state <= WRITEBACK;
-                    else
-                        n_state <= INCREMENT_PC;
+                        registerfile_we <= '1';
                     end if;
                 elsif decode_error(to_integer(unsigned(opcode))) = '1' then
                     n_state <= PANIC;
                 end if;
 
-            when WRITEBACK =>
-
-                data_width <= instruction_details_array(to_integer(unsigned(opcode))).data_width;
-                i_data_addr <= daddr(to_integer(unsigned(opcode)));
-                i_data_wdata <= wdata(to_integer(unsigned(opcode)));
-                i_data_re <= instruction_details_array(to_integer(unsigned(opcode))).data_re;
-                i_data_we <= dwe(to_integer(unsigned(opcode)));
-
-                registerfile_we <= '1';
-                n_state <= INCREMENT_PC;
-
-            when INCREMENT_PC =>
-                reset_instruction <= '1';
-                n_pc <= next_pc(to_integer(unsigned(opcode)));
-                n_state <= FETCH_INSTRUCTION;
             when PANIC =>
                 err <= '1';
             when others =>
@@ -281,13 +264,7 @@ begin
                 instruction <= inst_rdata;
             end if;
 
-            if reset_instruction = '1' then
-                instruction <= (others => '0');
-            end if;
-
             state <= n_state;
-
-
 
         end if;
     end process;

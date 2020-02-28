@@ -1,19 +1,22 @@
 #--  Synopsys, Inc.
 #--  Version O-2018.09M-SP1-1
 #--  Project file D:\FPGA\H13D\proj_1.prj
-#--  Written on Wed Feb  5 17:04:31 2020
+#--  Written on Fri Feb 28 10:45:51 2020
 
 
 #project files
-add_file -vhdl -lib work "hdl/cpu_new.vhd"
-add_file -vhdl -lib work "hdl/gpio.vhd"
-add_file -vhdl -lib work "hdl/ram.vhd"
-add_file -vhdl -lib work "hdl/rom.vhd"
+add_file -vhdl -lib work "hdl/cpu.vhd"
 add_file -vhdl -lib work "hdl/registerfile.vhd"
+add_file -vhdl -lib work "hdl/gpio.vhd"
+add_file -vhdl -lib work "hdl/i2cmaster.vhd"
+add_file -vhdl -lib work "hdl/spimaster.vhd"
+add_file -vhdl -lib work "hdl/rom.vhd"
+add_file -vhdl -lib work "hdl/ram.vhd"
 add_file -vhdl -lib work "hdl/timebase.vhd"
 add_file -vhdl -lib work "hdl/uart.vhd"
-add_file -vhdl -lib work "hdl/spimaster.vhd"
 add_file -vhdl -lib work "hdl/main.vhd"
+add_file "hdl/ROM.txt"
+add_file "hdl/RAM.txt"
 
 
 
@@ -86,6 +89,9 @@ set_option -multi_file_compilation_unit 1
 
 # Compiler Options
 set_option -auto_infer_blackbox 0
+
+# Compiler Options
+set_option -vhdl2008 1
 
 #automatic place and route (vendor) options
 set_option -write_apr_constraint 1
